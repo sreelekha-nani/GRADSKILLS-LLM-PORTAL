@@ -204,37 +204,185 @@ def admin_payments():
 def faculty_dashboard():
     conn = get_db()
     faculty_id = session['user_id']
+    
     courses = conn.execute("SELECT * FROM courses WHERE faculty_id = ?", (faculty_id,)).fetchall()
+    
+    # Stats
+    total_students = conn.execute("""
+        SELECT COUNT(DISTINCT student_id) as count 
+        FROM enrollments e 
+        JOIN courses c ON e.course_id = c.id 
+        WHERE c.faculty_id = ?
+    """, (faculty_id,)).fetchone()['count']
+    
+    pending_reviews = conn.execute("""
+        SELECT COUNT(*) as count FROM submissions s
+        JOIN assignments a ON s.assignment_id = a.id
+        JOIN courses c ON a.course_id = c.id
+        WHERE c.faculty_id = ? AND s.status = 'submitted'
+    """, (faculty_id,)).fetchone()['count']
+    
+    upcoming_classes = conn.execute("""
+        SELECT COUNT(*) as count FROM live_classes 
+        WHERE batch_id IN (SELECT id FROM batches WHERE faculty_id = ?)
+        AND schedule > CURRENT_TIMESTAMP
+    """, (faculty_id,)).fetchone()['count']
+    
+    stats = {
+        'courses': len(courses),
+        'students': total_students,
+        'reviews': pending_reviews,
+        'classes': upcoming_classes
+    }
+    
     conn.close()
-    return render_template('dashboard_faculty.html', courses=courses)
+    return render_template('dashboard_faculty.html', courses=courses, stats=stats)
 
-@app.route('/faculty/courses/new', methods=['GET', 'POST'])
+@app.route('/faculty/courses')
+@login_required(role='faculty')
+def faculty_courses():
+    conn = get_db()
+    courses = conn.execute("""
+        SELECT c.*, 
+        (SELECT COUNT(*) FROM enrollments WHERE course_id = c.id) as student_count,
+        (SELECT AVG(progress) FROM enrollments WHERE course_id = c.id) as avg_progress
+        FROM courses c WHERE c.faculty_id = ?
+    """, (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('faculty_courses.html', courses=courses)
+
+@app.route('/faculty/students')
+@login_required(role='faculty')
+def faculty_students():
+    conn = get_db()
+    students = conn.execute("""
+        SELECT DISTINCT u.*, b.name as batch_name, e.progress,
+        (SELECT COUNT(*) FROM attendance WHERE student_id = u.id AND status='present') * 100.0 / 
+        (SELECT COUNT(*) FROM attendance WHERE student_id = u.id) as att_pct
+        FROM users u
+        JOIN students s ON u.id = s.user_id
+        JOIN enrollments e ON u.id = e.student_id
+        JOIN courses c ON e.course_id = c.id
+        LEFT JOIN batches b ON s.batch_id = b.id
+        WHERE c.faculty_id = ?
+    """, (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('faculty_students.html', students=students)
+
+@app.route('/faculty/review')
+@login_required(role='faculty')
+def faculty_review():
+    conn = get_db()
+    faculty_id = session['user_id']
+    submissions = conn.execute("""
+        SELECT s.*, u.name as student_name, a.title as assignment_title
+        FROM submissions s
+        JOIN users u ON s.student_id = u.id
+        JOIN assignments a ON s.assignment_id = a.id
+        JOIN courses c ON a.course_id = c.id
+        WHERE c.faculty_id = ?
+        ORDER BY s.submitted_at DESC
+    """, (faculty_id,)).fetchall()
+    conn.close()
+    return render_template('faculty_assignments.html', submissions=submissions)
+
+@app.route('/faculty/attendance')
+@login_required(role='faculty')
+def faculty_attendance():
+    conn = get_db()
+    attendance = conn.execute("""
+        SELECT a.*, u.name as student_name, b.name as batch_name
+        FROM attendance a
+        JOIN users u ON a.student_id = u.id
+        JOIN batches b ON a.batch_id = b.id
+        WHERE b.faculty_id = ?
+        ORDER BY a.date DESC
+    """, (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('faculty_attendance.html', attendance=attendance)
+
+@app.route('/faculty/marks')
+@login_required(role='faculty')
+def faculty_marks():
+    conn = get_db()
+    marks = conn.execute("""
+        SELECT asub.*, u.name as student_name, a.title as assessment_title
+        FROM assessment_submissions asub
+        JOIN users u ON asub.student_id = u.id
+        JOIN assessments a ON asub.assessment_id = a.id
+        JOIN courses c ON a.course_id = c.id
+        WHERE c.faculty_id = ?
+    """, (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('faculty_marks.html', assessments=marks)
+
+@app.route('/faculty/batches')
+@login_required(role='faculty')
+def faculty_batches():
+    conn = get_db()
+    batches = conn.execute("""
+        SELECT b.*, (SELECT COUNT(*) FROM students WHERE batch_id = b.id) as student_count
+        FROM batches b WHERE b.faculty_id = ?
+    """, (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('faculty_batches.html', batches=batches)
+
+@app.route('/faculty/materials')
+@login_required(role='faculty')
+def faculty_materials():
+    conn = get_db()
+    materials = conn.execute("""
+        SELECT m.*, c.title as course_title
+        FROM materials m
+        JOIN courses c ON m.course_id = c.id
+        WHERE c.faculty_id = ?
+    """, (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('faculty_materials.html', materials=materials)
+
+@app.route('/faculty/live_classes')
+@login_required(role='faculty')
+def faculty_live_classes():
+    conn = get_db()
+    live_classes = conn.execute("""
+        SELECT l.*, b.name as batch_name 
+        FROM live_classes l 
+        JOIN batches b ON l.batch_id = b.id 
+        WHERE b.faculty_id = ?
+    """, (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('faculty_live_classes.html', live_classes=live_classes)
+
+@app.route('/faculty/notifications')
+@login_required(role='faculty')
+def faculty_notifications():
+    conn = get_db()
+    notifs = conn.execute("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('student_notifications.html', notifications=notifs)
+
+@app.route('/faculty/profile')
+@login_required(role='faculty')
+def faculty_profile():
+    return redirect(url_for('student_profile'))
+
+@app.route('/faculty/course/create', methods=['GET', 'POST'])
 @login_required(role='faculty')
 def create_course():
     if request.method == 'POST':
         title = request.form['title']
-        description = request.form['description']
-        category = request.form['category']
+        desc = request.form['description']
+        cat = request.form['category']
         price = request.form['price']
-        
+        faculty_id = session['user_id']
         conn = get_db()
         conn.execute("INSERT INTO courses (title, description, category, price, faculty_id) VALUES (?, ?, ?, ?, ?)",
-                     (title, description, category, price, session['user_id']))
+                     (title, desc, cat, price, faculty_id))
         conn.commit()
         conn.close()
         flash('Course created successfully', 'success')
         return redirect(url_for('faculty_dashboard'))
     return render_template('course_create.html')
-
-@app.route('/faculty/course/<int:course_id>/modules', methods=['POST'])
-@login_required(role='faculty')
-def add_module(course_id):
-    title = request.form['title']
-    conn = get_db()
-    conn.execute("INSERT INTO modules (course_id, title) VALUES (?, ?)", (course_id, title))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('faculty_course_detail', course_id=course_id))
 
 @app.route('/faculty/course/<int:course_id>')
 @login_required(role='faculty')
@@ -245,30 +393,6 @@ def faculty_course_detail(course_id):
     videos = conn.execute("SELECT v.* FROM videos v JOIN modules m ON v.module_id = m.id WHERE m.course_id = ?", (course_id,)).fetchall()
     conn.close()
     return render_template('faculty_course_detail.html', course=course, modules=modules, videos=videos)
-
-@app.route('/faculty/assignments')
-@login_required(role='faculty')
-def faculty_assignments():
-    conn = get_db()
-    faculty_id = session['user_id']
-    assignments = conn.execute("""
-        SELECT a.*, c.title as course_title 
-        FROM assignments a 
-        JOIN courses c ON a.course_id = c.id 
-        WHERE c.faculty_id = ?
-    """, (faculty_id,)).fetchall()
-    conn.close()
-    return render_template('faculty_assignments.html', assignments=assignments)
-
-@app.route('/faculty/live_classes')
-@login_required(role='faculty')
-def faculty_live_classes():
-    conn = get_db()
-    # Mock live classes for demo
-    live_classes = conn.execute("SELECT * FROM live_classes").fetchall()
-    conn.close()
-    return render_template('faculty_live_classes.html', live_classes=live_classes)
-
 
 @app.route('/faculty/module/<int:module_id>/videos', methods=['POST'])
 @login_required(role='faculty')
@@ -344,15 +468,21 @@ def student_dashboard():
 def student_my_courses():
     conn = get_db()
     student_id = session['user_id']
+    
+    # Auto-generate for any course that reached 100% but has no cert yet
+    completed_courses = conn.execute("SELECT course_id FROM enrollments WHERE student_id = ? AND progress >= 100", (student_id,)).fetchall()
+    for row in completed_courses:
+        ensure_certificate(student_id, row['course_id'])
+
     enrollments = conn.execute("""
-        SELECT e.*, c.title, c.description, c.thumbnail, c.instructor_name 
-        FROM enrollments e 
-        JOIN courses c ON e.course_id = c.id 
+        SELECT e.*, c.title, c.description, c.thumbnail, c.instructor_name, cert.certificate_id
+        FROM enrollments e
+        JOIN courses c ON e.course_id = c.id
+        LEFT JOIN certificates cert ON e.student_id = cert.student_id AND e.course_id = cert.course_id
         WHERE e.student_id = ?
     """, (student_id,)).fetchall()
     conn.close()
     return render_template('student_my_courses.html', enrollments=enrollments)
-
 @app.route('/student/attendance')
 @login_required(role='student')
 def student_attendance():
@@ -533,11 +663,22 @@ def enroll_course(course_id):
 def student_course_detail(course_id):
     conn = get_db()
     student_id = session['user_id']
+    
+    # Auto-generate for this course if it reached 100% but has no cert yet
+    progress_row = conn.execute("SELECT progress FROM enrollments WHERE student_id = ? AND course_id = ?", (student_id, course_id)).fetchone()
+    if progress_row and progress_row['progress'] >= 100:
+        ensure_certificate(student_id, course_id)
+
     course = conn.execute("SELECT * FROM courses WHERE id = ?", (course_id,)).fetchone()
     modules = conn.execute("SELECT * FROM modules WHERE course_id = ? ORDER BY order_num", (course_id,)).fetchall()
     videos = conn.execute("SELECT v.* FROM videos v JOIN modules m ON v.module_id = m.id WHERE m.course_id = ?", (course_id,)).fetchall()
     
-    enrollment = conn.execute("SELECT progress FROM enrollments WHERE student_id = ? AND course_id = ?", (student_id, course_id)).fetchone()
+    enrollment = conn.execute("""
+        SELECT e.*, cert.certificate_id 
+        FROM enrollments e 
+        LEFT JOIN certificates cert ON e.student_id = cert.student_id AND e.course_id = cert.course_id
+        WHERE e.student_id = ? AND e.course_id = ?
+    """, (student_id, course_id)).fetchone()
     
     conn.close()
     return render_template('student_course_detail.html', course=course, modules=modules, videos=videos, enrollment=enrollment)
@@ -607,17 +748,67 @@ def generate_cert_webhook():
     conn.close()
     
     if cert:
-        return jsonify({"status": "success", "cert_id": cert['certificate_id'], "url": url_for('download_certificate', cert_id=cert['certificate_id'])})
+        return jsonify({"status": "success", "cert_id": cert['certificate_id'], "url": url_for('view_certificate', cert_id=cert['certificate_id'])})
     return jsonify({"status": "error", "message": "Failed to generate certificate"}), 500
 
 @app.route('/certificates/<cert_id>')
+def view_certificate(cert_id):
+    conn = get_db()
+    # Use LEFT JOIN to be more robust if user/course was somehow deleted
+    cert = conn.execute("""
+        SELECT ce.*, u.name as student_name, co.title as course_title
+        FROM certificates ce
+        LEFT JOIN users u ON ce.student_id = u.id
+        LEFT JOIN courses co ON ce.course_id = co.id
+        WHERE ce.certificate_id = ?
+    """, (cert_id,)).fetchone()
+    conn.close()
+    
+    if cert:
+        # Add college name to cert object for the template
+        cert_data = dict(cert)
+        cert_data['college_name'] = "EduTech Institute of Technology"
+        return render_template('certificate_view.html', cert=cert_data)
+    
+    # If not found by certificate_id, maybe it's an internal ID? 
+    # Try searching by ID if it's numeric
+    if cert_id.isdigit():
+        conn = get_db()
+        cert = conn.execute("SELECT certificate_id FROM certificates WHERE id = ?", (cert_id,)).fetchone()
+        conn.close()
+        if cert:
+            return redirect(url_for('view_certificate', cert_id=cert['certificate_id']))
+
+    return abort(404)
+
+@app.route('/certificates/download/<cert_id>')
 def download_certificate(cert_id):
     conn = get_db()
-    cert = conn.execute("SELECT pdf_path FROM certificates WHERE certificate_id = ?", (cert_id,)).fetchone()
+    cert = conn.execute("""
+        SELECT ce.*, u.name as student_name, co.title as course_title
+        FROM certificates ce
+        LEFT JOIN users u ON ce.student_id = u.id
+        LEFT JOIN courses co ON ce.course_id = co.id
+        WHERE ce.certificate_id = ?
+    """, (cert_id,)).fetchone()
     conn.close()
-    if cert:
-        return send_from_directory(app.config['CERTIFICATES_FOLDER'], cert['pdf_path'])
-    return abort(404)
+    
+    if not cert:
+        return abort(404)
+        
+    pdf_filename = f"{cert_id}.pdf"
+    pdf_path = os.path.join(app.config['CERTIFICATES_FOLDER'], pdf_filename)
+    
+    if not os.path.exists(pdf_path):
+        # Regenerate PDF if missing (e.g. on Render ephemeral disk)
+        try:
+            generate_certificate(cert['student_name'], cert['course_title'], cert_id)
+        except Exception as e:
+            print(f"Failed to regenerate PDF: {e}")
+            # Fallback to HTML view if PDF fails
+            return redirect(url_for('view_certificate', cert_id=cert_id))
+            
+    return send_from_directory(app.config['CERTIFICATES_FOLDER'], pdf_filename)
 
 # ================= PAYMENT SIMULATION =================
 @app.route('/payment', methods=['GET', 'POST'])
@@ -645,7 +836,140 @@ def payment():
 @app.route('/parent')
 @login_required(role='parent')
 def parent_dashboard():
-    return render_template('dashboard_parent.html')
+    conn = get_db()
+    parent_id = session['user_id']
+    
+    child = conn.execute("SELECT u.* FROM users u JOIN students s ON u.id = s.user_id WHERE s.parent_id = ?", (parent_id,)).fetchone()
+    
+    if not child:
+        conn.close()
+        return render_template('dashboard_parent.html', stats={'name': 'No Child Linked'})
+        
+    child_id = child['id']
+    
+    # Stats
+    attendance_data = conn.execute("SELECT status FROM attendance WHERE student_id = ?", (child_id,)).fetchall()
+    att_pct = (sum(1 for d in attendance_data if d['status'] == 'present') / len(attendance_data) * 100) if attendance_data else 0
+    
+    completed = conn.execute("SELECT COUNT(*) as count FROM enrollments WHERE student_id = ? AND progress >= 100", (child_id,)).fetchone()['count']
+    certificates = conn.execute("SELECT COUNT(*) as count FROM certificates WHERE student_id = ?", (child_id,)).fetchone()['count']
+    avg_progress = conn.execute("SELECT AVG(progress) as avg FROM enrollments WHERE student_id = ?", (child_id,)).fetchone()['avg'] or 0
+    
+    fees_paid = conn.execute("SELECT SUM(amount) as sum FROM payments WHERE student_id = ? AND status = 'success'", (child_id,)).fetchone()['sum'] or 0
+    
+    stats = {
+        'name': child['name'],
+        'att_pct': round(att_pct, 1),
+        'completed': completed,
+        'certificates': certificates,
+        'progress': round(avg_progress, 1),
+        'fees': fees_paid
+    }
+    
+    conn.close()
+    return render_template('dashboard_parent.html', stats=stats)
+
+@app.route('/parent/child-courses')
+@login_required(role='parent')
+def parent_child_courses():
+    conn = get_db()
+    parent_id = session['user_id']
+    courses = conn.execute("""
+        SELECT c.*, e.progress 
+        FROM courses c 
+        JOIN enrollments e ON c.id = e.course_id 
+        JOIN students s ON e.student_id = s.user_id 
+        WHERE s.parent_id = ?
+    """, (parent_id,)).fetchall()
+    conn.close()
+    return render_template('parent_courses.html', enrollments=courses)
+
+@app.route('/parent/attendance')
+@login_required(role='parent')
+def parent_attendance():
+    conn = get_db()
+    parent_id = session['user_id']
+    attendance = conn.execute("""
+        SELECT a.*, u.name as student_name FROM attendance a 
+        JOIN users u ON a.student_id = u.id
+        JOIN students s ON a.student_id = s.user_id 
+        WHERE s.parent_id = ? ORDER BY date DESC
+    """, (parent_id,)).fetchall()
+    conn.close()
+    return render_template('parent_attendance.html', attendance=attendance)
+
+@app.route('/parent/assessments')
+@login_required(role='parent')
+def parent_assessments():
+    conn = get_db()
+    parent_id = session['user_id']
+    marks = conn.execute("""
+        SELECT asub.*, a.title as assessment_title, u.name as student_name
+        FROM assessment_submissions asub 
+        JOIN users u ON asub.student_id = u.id
+        JOIN assessments a ON asub.assessment_id = a.id 
+        JOIN students s ON asub.student_id = s.user_id 
+        WHERE s.parent_id = ?
+    """, (parent_id,)).fetchall()
+    conn.close()
+    return render_template('parent_assessments.html', assessments=marks)
+
+@app.route('/parent/assignments')
+@login_required(role='parent')
+def parent_assignments():
+    conn = get_db()
+    parent_id = session['user_id']
+    subs = conn.execute("""
+        SELECT sub.*, a.title as assignment_title, u.name as student_name
+        FROM submissions sub 
+        JOIN users u ON sub.student_id = u.id
+        JOIN assignments a ON sub.assignment_id = a.id 
+        JOIN students s ON sub.student_id = s.user_id 
+        WHERE s.parent_id = ?
+    """, (parent_id,)).fetchall()
+    conn.close()
+    return render_template('parent_assignments.html', submissions=subs)
+
+@app.route('/parent/fees')
+@login_required(role='parent')
+def parent_fees():
+    conn = get_db()
+    parent_id = session['user_id']
+    payments = conn.execute("""
+        SELECT p.* FROM payments p 
+        JOIN students s ON p.student_id = s.user_id 
+        WHERE s.parent_id = ? ORDER BY created_at DESC
+    """, (parent_id,)).fetchall()
+    conn.close()
+    return render_template('parent_fees.html', payments=payments)
+
+@app.route('/parent/certificates')
+@login_required(role='parent')
+def parent_certificates():
+    conn = get_db()
+    parent_id = session['user_id']
+    certs = conn.execute("""
+        SELECT c.*, co.title as course_title 
+        FROM certificates c 
+        JOIN courses co ON c.course_id = co.id 
+        JOIN students s ON c.student_id = s.user_id 
+        WHERE s.parent_id = ?
+    """, (parent_id,)).fetchall()
+    conn.close()
+    return render_template('parent_certificates.html', certs=certs)
+
+@app.route('/parent/notifications')
+@login_required(role='parent')
+def parent_notifications():
+    conn = get_db()
+    notifs = conn.execute("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],)).fetchall()
+    conn.close()
+    return render_template('student_notifications.html', notifications=notifs)
+
+@app.route('/parent/profile')
+@login_required(role='parent')
+def parent_profile():
+    return redirect(url_for('student_profile'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

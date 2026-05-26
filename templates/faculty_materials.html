@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+    <div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Upload Materials</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Distribute lecture notes, assignments, and resources to your students.</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="fas fa-file-upload" style="margin-right: 8px;"></i> Upload New File
+    </button>
+</div>
+
+<div class="grid">
+    {% for m in materials %}
+    <div class="card" style="display: flex; flex-direction: column; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="width: 45px; height: 45px; border-radius: 10px; background: #FEF3C7; color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fas fa-file-pdf"></i>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="font-size: 1rem; font-weight: 800; margin-bottom: 2px;">{{ m.title }}</h4>
+                <p style="color: var(--text-muted); font-size: 0.8rem;">{{ m.course_title }}</p>
+            </div>
+        </div>
+        <div style="background: #F8FAFC; padding: 10px; border-radius: 8px; font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+            <span><i class="far fa-calendar-alt"></i> {{ m.created_at[:10] }}</span>
+            <span><i class="fas fa-download"></i> 124 Downloads</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline" style="flex: 1; padding: 0.5rem; border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.8rem;">Preview</button>
+            <button class="btn btn-danger" style="padding: 0.5rem; background: #FEE2E2; color: #991B1B;"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="margin-bottom: 1.5rem;">Recent Upload Activity</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Course</th>
+                    <th>Upload Date</th>
+                    <th>Downloads</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in materials[:5] %}
+                <tr>
+                    <td style="font-weight: 700;">{{ m.file_url }}</td>
+                    <td><span class="badge" style="background: #DBEAFE; color: var(--primary-color);">PDF</span></td>
+                    <td>{{ m.course_title }}</td>
+                    <td>{{ m.created_at[:16] }}</td>
+                    <td>24</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

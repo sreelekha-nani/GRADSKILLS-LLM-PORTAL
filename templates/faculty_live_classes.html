@@ -1,36 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 style="margin-bottom: 1.5rem;">Live Classes & Schedule</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+    <div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Live Classes & Schedule</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your real-time virtual classroom sessions.</p>
+    </div>
+    <button class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+        <i class="fas fa-plus" style="margin-right: 8px;"></i> Schedule New Class
+    </button>
+</div>
 
 <div class="card">
-    <p>Manage your upcoming live sessions.</p>
-    <br>
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Schedule</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for live in live_classes %}
-            <tr>
-                <td>{{ live.title }}</td>
-                <td>{{ live.schedule }}</td>
-                <td>{{ live.status }}</td>
-                <td><a href="{{ live.meeting_link }}" target="_blank" class="btn btn-success btn-sm">Join Class</a></td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" style="text-align: center;">No live classes scheduled.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <br>
-    <button class="btn btn-primary">+ Schedule New Class</button>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Class Title</th>
+                    <th>Batch</th>
+                    <th>Schedule</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for live in live_classes %}
+                <tr>
+                    <td style="font-weight: 700;">{{ live.title }}</td>
+                    <td>{{ live.batch_name }}</td>
+                    <td>{{ live.schedule[:16] }}</td>
+                    <td>
+                        {% if live.status == 'scheduled' %}
+                        <span class="badge" style="background: #DBEAFE; color: #1E40AF;">Scheduled</span>
+                        {% elif live.status == 'ongoing' %}
+                        <span class="badge" style="background: #D1FAE5; color: #065F46;">Live Now</span>
+                        {% else %}
+                        <span class="badge" style="background: #F3F4F6; color: #374151;">Completed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ live.meeting_link }}" target="_blank" class="btn btn-success btn-sm">
+                            <i class="fas fa-video" style="margin-right: 4px;"></i> Join Now
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 3rem; text-align: center; color: var(--text-muted);">No live classes found in your schedule.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

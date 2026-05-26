@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Earned Certificates</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Celebrate your child's milestones. Access and download all earned academic credentials.</p>
+</div>
+
+<div class="grid">
+    {% for cert in certs %}
+    <div class="card" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="font-size: 3rem; color: var(--accent-color); margin-bottom: 1rem;">
+                <i class="fas fa-award"></i>
+            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main);">{{ cert.course_title }}</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1.5rem;">Issued on: {{ cert.issued_at[:10] }}</p>
+            <p style="font-family: monospace; font-size: 0.75rem; background: #F8FAFC; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">ID: {{ cert.certificate_id }}</p>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('view_certificate', cert_id=cert.certificate_id) }}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; font-size: 0.8rem;">Preview</a>
+            <a href="{{ url_for('download_certificate', cert_id=cert.certificate_id) }}" download class="btn btn-success" style="flex: 1; text-align: center; font-size: 0.8rem; background: #D1FAE5; color: #065F46; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center;"><i class="fas fa-download" style="margin-right: 5px;"></i> PDF</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

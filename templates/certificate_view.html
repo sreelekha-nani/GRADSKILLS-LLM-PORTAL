@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate - {{ cert.certificate_id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Playfair+Display:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #1E3A8A;
+            --gold: #B45309;
+            --bg-paper: #FDFBF7;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #E2E8F0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .certificate-container {
+            width: 900px;
+            height: 650px;
+            background-color: var(--bg-paper);
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 20px solid var(--primary-blue);
+            box-sizing: border-box;
+            background-image: radial-gradient(circle at center, transparent 0%, rgba(180, 83, 9, 0.03) 100%);
+        }
+
+        .inner-border {
+            border: 2px solid var(--gold);
+            height: 100%;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .header {
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin: 20px 0;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+        }
+
+        .sub-title {
+            font-size: 1.2rem;
+            color: #4B5563;
+            margin-bottom: 30px;
+        }
+
+        .student-name {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 4.5rem;
+            color: var(--gold);
+            margin: 10px 0;
+            border-bottom: 2px solid #E5E7EB;
+            padding-bottom: 10px;
+            width: 80%;
+        }
+
+        .course-info {
+            font-size: 1.1rem;
+            color: #4B5563;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .course-name {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 1.5rem;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: auto;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 20px;
+        }
+
+        .signature-box {
+            width: 200px;
+            border-top: 1px solid #9CA3AF;
+            padding-top: 10px;
+        }
+
+        .signature-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .signature-title {
+            font-size: 0.75rem;
+            color: #6B7280;
+        }
+
+        .seal {
+            width: 100px;
+            height: 100px;
+            background-color: var(--gold);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-align: center;
+            box-shadow: 0 0 0 8px rgba(180, 83, 9, 0.1);
+            position: relative;
+        }
+
+        .seal::after {
+            content: '';
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+        }
+
+        .meta-info {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            font-size: 0.7rem;
+            color: #9CA3AF;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-print {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-back {
+            background-color: white;
+            color: #374151;
+            border: 1px solid #D1D5DB;
+        }
+
+        @media print {
+            .controls { display: none; }
+            body { background-color: white; }
+            .certificate-container { box-shadow: none; border-width: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <a href="javascript:window.history.back()" class="btn btn-back">Back to Dashboard</a>
+        <button onclick="window.print()" class="btn btn-print">Print Certificate</button>
+    </div>
+
+    <div class="certificate-container">
+        <div class="inner-border">
+            <div class="header">
+                <div class="logo-text">EDUTECH LMS</div>
+                <div style="font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">{{ cert.college_name }}</div>
+            </div>
+
+            <div class="title">Certificate</div>
+            <div class="sub-title">OF COMPLETION</div>
+
+            <div style="font-size: 1rem; color: #6B7280; text-transform: uppercase; letter-spacing: 2px;">This is to certify that</div>
+            
+            <div class="student-name">{{ cert.student_name }}</div>
+
+            <div class="course-info">
+                has successfully demonstrated proficiency and met all requirements for the course
+                <span class="course-name">{{ cert.course_title }}</span>
+            </div>
+
+            <div class="footer">
+                <div class="signature-box">
+                    <div class="signature-name">Academic Director</div>
+                    <div class="signature-title">{{ cert.college_name }}</div>
+                </div>
+
+                <div class="seal">
+                    OFFICIAL<br>VERIFIED<br>SEAL
+                </div>
+
+                <div class="signature-box">
+                    <div class="signature-name">{{ cert.issued_at[:10] }}</div>
+                    <div class="signature-title">Date of Issue</div>
+                </div>
+            </div>
+
+            <div class="meta-info">
+                Certificate ID: {{ cert.certificate_id }} | Verify at edutech-lms.com/verify
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

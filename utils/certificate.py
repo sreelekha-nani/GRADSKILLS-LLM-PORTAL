@@ -26,7 +26,12 @@ def generate_certificate(student_name, course_name, cert_id):
     # Title
     c.setFont("Helvetica-Bold", 36)
     c.setFillColor(colors.HexColor('#1E3A8A'))
-    c.drawCentredString(width/2.0, height - 2.0*inch, "Certificate of Completion")
+    c.drawCentredString(width/2.0, height - 1.5*inch, "Certificate of Completion")
+    
+    # College Name
+    c.setFont("Helvetica-Bold", 18)
+    c.setFillColor(colors.HexColor('#B45309'))
+    c.drawCentredString(width/2.0, height - 2.0*inch, "EduTech Institute of Technology")
     
     # Subtitle
     c.setFont("Helvetica", 18)

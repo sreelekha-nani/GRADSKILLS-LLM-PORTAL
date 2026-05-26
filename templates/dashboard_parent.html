@@ -1,10 +1,128 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 style="margin-bottom: 1.5rem;">Parent Dashboard</h2>
-<div class="card">
-    <p>Welcome to the Parent Portal.</p>
-    <p>This module allows you to track attendance, see fee statuses, and view student performance reports.</p>
-    <p style="color: #666; margin-top:10px;">(Additional modules like detailed attendance charts and parent-teacher chat would appear here.)</p>
+<div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Parent Dashboard</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Tracking progress for <strong>{{ stats.name }}</strong></p>
+</div>
+
+<!-- Stats Grid -->
+<div class="grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2.5rem;">
+    <div class="card stat-card" style="border-top: 4px solid var(--primary-color);">
+        <h3>Attendance</h3>
+        <p>{{ stats.att_pct }}%</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid var(--success-color);">
+        <h3>Completed</h3>
+        <p>{{ stats.completed }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid var(--accent-color);">
+        <h3>Certificates</h3>
+        <p>{{ stats.certificates }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid var(--primary-light);">
+        <h3>Fees Paid</h3>
+        <p>${{ stats.fees }}</p>
+    </div>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Child Progress Chart -->
+    <div class="card">
+        <h3 style="margin-bottom: 2rem; display: flex; align-items: center;">
+            <i class="fas fa-chart-line" style="color: var(--primary-color); margin-right: 10px;"></i>
+            Learning Progress Trend
+        </h3>
+        <div style="height: 200px; position: relative; margin-top: 2rem; padding: 0 1rem;">
+            <svg viewBox="0 0 400 100" style="width: 100%; height: 100%;">
+                <path d="M0,80 L50,75 L100,60 L150,55 L200,40 L250,30 L300,20 L350,10 L400,5" fill="none" stroke="var(--primary-color)" stroke-width="3" />
+                <circle cx="50" cy="75" r="4" fill="var(--primary-color)" />
+                <circle cx="150" cy="55" r="4" fill="var(--primary-color)" />
+                <circle cx="250" cy="30" r="4" fill="var(--primary-color)" />
+                <circle cx="350" cy="10" r="4" fill="var(--primary-color)" />
+            </svg>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; color: var(--text-muted); font-size: 0.75rem;">
+                <span>Jan</span>
+                <span>Feb</span>
+                <span>Mar</span>
+                <span>Apr</span>
+                <span>May</span>
+            </div>
+        </div>
+        <div style="margin-top: 2rem; background: #F1F5F9; padding: 1.25rem; border-radius: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-weight: 600; font-size: 0.9rem;">Overall Course Completion</span>
+                <span style="font-weight: 800; color: var(--primary-color);">{{ stats.progress }}%</span>
+            </div>
+            <div style="height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                <div style="width: {{ stats.progress }}%; height: 100%; background: var(--primary-color);"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Alerts -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem;">Recent Updates</h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="padding: 1rem; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px;">
+                <div style="font-weight: 700; color: #166534; font-size: 0.85rem; margin-bottom: 4px;">Certificate Earned</div>
+                <div style="font-size: 0.8rem; color: #166534;">Python Basics completed successfully.</div>
+            </div>
+            <div style="padding: 1rem; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px;">
+                <div style="font-weight: 700; color: #1E40AF; font-size: 0.85rem; margin-bottom: 4px;">Assessment Result</div>
+                <div style="font-size: 0.8rem; color: #1E40AF;">Scored 92/100 in Flask Routing.</div>
+            </div>
+            <div style="padding: 1rem; background: #FFFBEB; border: 1px solid #FEF3C7; border-radius: 12px;">
+                <div style="font-weight: 700; color: #92400E; font-size: 0.85rem; margin-bottom: 4px;">Attendance Alert</div>
+                <div style="font-size: 0.8rem; color: #92400E;">Late arrival for SQLite session.</div>
+            </div>
+        </div>
+        <br>
+        <a href="{{ url_for('parent_notifications') }}" style="text-decoration: none; color: var(--primary-color); font-weight: 700; font-size: 0.85rem;">View All Notifications &rarr;</a>
+    </div>
+</div>
+
+<!-- Performance Deep Dive -->
+<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem;">
+    <div class="card" style="border-bottom: 4px solid var(--primary-color);">
+        <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Subject Excellence</h4>
+        <div style="font-weight: 800; font-size: 1.25rem; color: var(--text-main);">Python Programming</div>
+        <p style="font-size: 0.8rem; color: var(--success-color); font-weight: 700; margin-top: 5px;">Top Performer in Batch</p>
+    </div>
+    <div class="card" style="border-bottom: 4px solid var(--success-color);">
+        <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Upcoming Assessment</h4>
+        <div style="font-weight: 800; font-size: 1.25rem; color: var(--text-main);">SQLite Exam</div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">June 15, 2026 | 10:00 AM</p>
+    </div>
+    <div class="card" style="border-bottom: 4px solid var(--accent-color);">
+        <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Skill Mastery</h4>
+        <div style="font-weight: 800; font-size: 1.25rem; color: var(--text-main);">Backend Dev</div>
+        <div style="height: 6px; background: #E2E8F0; border-radius: 3px; margin-top: 12px; overflow: hidden;">
+            <div style="width: 82%; height: 100%; background: var(--accent-color);"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="margin-bottom: 1.5rem;">Quick Navigation</h3>
+    <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+        <a href="{{ url_for('parent_child_courses') }}" class="btn btn-outline" style="background: white; border: 1px solid var(--border-color); color: var(--text-main); flex-direction: column; padding: 1.5rem; gap: 10px; display: flex; align-items: center; text-decoration: none;">
+            <i class="fas fa-book" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+            <span style="font-weight: 700;">Child Courses</span>
+        </a>
+        <a href="{{ url_for('parent_attendance') }}" class="btn btn-outline" style="background: white; border: 1px solid var(--border-color); color: var(--text-main); flex-direction: column; padding: 1.5rem; gap: 10px; display: flex; align-items: center; text-decoration: none;">
+            <i class="fas fa-calendar-check" style="font-size: 1.5rem; color: var(--success-color);"></i>
+            <span style="font-weight: 700;">Attendance</span>
+        </a>
+        <a href="{{ url_for('parent_fees') }}" class="btn btn-outline" style="background: white; border: 1px solid var(--border-color); color: var(--text-main); flex-direction: column; padding: 1.5rem; gap: 10px; display: flex; align-items: center; text-decoration: none;">
+            <i class="fas fa-file-invoice-dollar" style="font-size: 1.5rem; color: var(--accent-color);"></i>
+            <span style="font-weight: 700;">Fee Reports</span>
+        </a>
+        <a href="{{ url_for('parent_certificates') }}" class="btn btn-outline" style="background: white; border: 1px solid var(--border-color); color: var(--text-main); flex-direction: column; padding: 1.5rem; gap: 10px; display: flex; align-items: center; text-decoration: none;">
+            <i class="fas fa-award" style="font-size: 1.5rem; color: var(--primary-light);"></i>
+            <span style="font-weight: 700;">Certificates</span>
+        </a>
+    </div>
 </div>
 {% endblock %}

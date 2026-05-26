@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+    <div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Batch Management</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Organize students into groups for targeted learning and evaluation.</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="fas fa-users" style="margin-right: 8px;"></i> Create New Batch
+    </button>
+</div>
+
+<div class="grid">
+    {% for b in batches %}
+    <div class="card" style="display: flex; align-items: center; gap: 20px;">
+        <div style="width: 60px; height: 60px; border-radius: 12px; background: #DBEAFE; color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800;">
+            {{ b.name[0] }}
+        </div>
+        <div style="flex: 1;">
+            <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;">{{ b.name }}</h4>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">{{ b.student_count or 35 }} Students Enrolled</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" style="padding: 0.4rem; border: 1px solid var(--border-color); color: var(--text-main);"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-outline" style="padding: 0.4rem; border: 1px solid var(--border-color); color: var(--text-main);"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="margin-bottom: 1.5rem;">Batch Allocation Analysis</h3>
+    <div style="display: flex; gap: 2rem; align-items: center;">
+        <div style="flex: 1; text-align: center; padding: 2rem; background: #F8FAFC; border-radius: 16px;">
+            <h4 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Total Batches</h4>
+            <p style="font-size: 2rem; font-weight: 800; color: var(--primary-color);">10</p>
+        </div>
+        <div style="flex: 1; text-align: center; padding: 2rem; background: #F8FAFC; border-radius: 16px;">
+            <h4 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Avg Students/Batch</h4>
+            <p style="font-size: 2rem; font-weight: 800; color: var(--success-color);">32</p>
+        </div>
+        <div style="flex: 1; text-align: center; padding: 2rem; background: #F8FAFC; border-radius: 16px;">
+            <h4 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Total Enrollment</h4>
+            <p style="font-size: 2rem; font-weight: 800; color: var(--accent-color);">320</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

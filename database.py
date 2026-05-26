@@ -79,7 +79,6 @@ def init_db():
     )
     ''')
 
-    # Add columns if they don't exist (for existing databases)
     try: cursor.execute("ALTER TABLE courses ADD COLUMN thumbnail TEXT")
     except sqlite3.OperationalError: pass
     try: cursor.execute("ALTER TABLE courses ADD COLUMN difficulty TEXT")
@@ -301,6 +300,18 @@ def init_db():
         FOREIGN KEY (student_id) REFERENCES users (id)
     )
     ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS materials (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        course_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        file_url TEXT,
+        material_type TEXT, -- pdf, video, link
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (course_id) REFERENCES courses (id)
+    )
+    ''')
     
     # Pre-populate admin user
     cursor.execute("SELECT id FROM users WHERE email='admin@edutech.com'")
@@ -308,7 +319,7 @@ def init_db():
         cursor.execute("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
                        ('EduTech Admin', 'admin@edutech.com', generate_password_hash('admin123'), 'admin'))
     
-    # Define courses list outside the if block for scope
+    # Seed Courses
     courses_to_seed = [
         ("Python Programming Basics", "Master the fundamentals of Python programming from scratch.", "Programming", "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&h=250&fit=crop", "Beginner", "10 Hours", "John Smith", "https://www.youtube.com/embed/rfscVS0vtbw"),
         ("Advanced Python", "Deep dive into advanced Python concepts like decorators and generators.", "Programming", "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=400&h=250&fit=crop", "Advanced", "15 Hours", "Sarah Wilson", "https://www.youtube.com/embed/f79m180jlr8"),
@@ -322,14 +333,25 @@ def init_db():
         ("Full Stack LMS Project", "Bring it all together by building a complete LMS.", "Web Development", "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=400&h=250&fit=crop", "Advanced", "20 Hours", "James White", "https://www.youtube.com/embed/v9qI6M-xIdM")
     ]
 
-    # Seed Courses
     cursor.execute("SELECT COUNT(*) FROM courses")
     if cursor.fetchone()[0] == 0:
-        admin_id = 1
         cursor.executemany("""
             INSERT INTO courses (title, description, category, thumbnail, difficulty, duration, instructor_name, video_url, status, faculty_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
-        """, [c + (admin_id,) for c in courses_to_seed])
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 1)
+        """, courses_to_seed)
+
+    # Seed Demo Faculty
+    cursor.execute("SELECT id FROM users WHERE email='faculty@edutech.com'")
+    demo_faculty = cursor.fetchone()
+    if not demo_faculty:
+        cursor.execute("INSERT INTO users (name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)",
+                       ('Prof. Sarah Faculty', 'faculty@edutech.com', generate_password_hash('faculty123'), 'faculty', '+1 987 654 3210'))
+        faculty_user_id = cursor.lastrowid
+        cursor.execute("INSERT INTO faculty (user_id, department) VALUES (?, ?)", (faculty_user_id, 'Computer Science'))
+        # Update some courses to belong to this faculty
+        cursor.execute("UPDATE courses SET faculty_id = ? WHERE id <= 10", (faculty_user_id,))
+    else:
+        faculty_user_id = demo_faculty['id']
 
     # Seed Demo Student
     cursor.execute("SELECT id FROM users WHERE email='student@edutech.com'")
@@ -337,76 +359,93 @@ def init_db():
     if not demo_student:
         cursor.execute("INSERT INTO users (name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)",
                        ('John Student', 'student@edutech.com', generate_password_hash('student123'), 'student', '+1 234 567 8900'))
-        student_id = cursor.lastrowid
-        # Seed batch
-        cursor.execute("INSERT INTO batches (name) VALUES (?)", ("Alpha Batch 2026",))
+        student_user_id = cursor.lastrowid
+        cursor.execute("INSERT INTO batches (name, faculty_id) VALUES (?, ?)", ("Alpha Batch 2026", faculty_user_id))
         batch_id = cursor.lastrowid
-        cursor.execute("INSERT INTO students (user_id, batch_id) VALUES (?, ?)", (student_id, batch_id))
+        cursor.execute("INSERT INTO students (user_id, batch_id) VALUES (?, ?)", (student_user_id, batch_id))
     else:
-        student_id = demo_student['id']
+        student_user_id = demo_student['id']
+        cursor.execute("SELECT batch_id FROM students WHERE user_id = ?", (student_user_id,))
+        row = cursor.fetchone()
+        if row and row['batch_id']:
+            batch_id = row['batch_id']
+        else:
+            cursor.execute("INSERT INTO batches (name, faculty_id) VALUES (?, ?)", ("Alpha Batch 2026", faculty_user_id))
+            batch_id = cursor.lastrowid
+            cursor.execute("INSERT OR REPLACE INTO students (user_id, batch_id) VALUES (?, ?)", (student_user_id, batch_id))
 
-    # Seed Enrollments
-    cursor.execute("SELECT COUNT(*) FROM enrollments WHERE student_id = ?", (student_id,))
+    # Seed Demo Parent
+    cursor.execute("SELECT id FROM users WHERE email='parent@edutech.com'")
+    demo_parent = cursor.fetchone()
+    if not demo_parent:
+        cursor.execute("INSERT INTO users (name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)",
+                       ('Mr. Robert Parent', 'parent@edutech.com', generate_password_hash('parent123'), 'parent', '+1 555 123 4567'))
+        parent_user_id = cursor.lastrowid
+        cursor.execute("INSERT INTO parents (user_id) VALUES (?)", (parent_user_id,))
+        # Link parent to student
+        cursor.execute("UPDATE students SET parent_id = ? WHERE user_id = ?", (parent_user_id, student_user_id))
+    else:
+        parent_user_id = demo_parent['id']
+
+    # Seed 10 Batches if empty
+    cursor.execute("SELECT COUNT(*) FROM batches")
+    if cursor.fetchone()[0] < 10:
+        batches_to_seed = [(f"Batch {i+1} - 2026", faculty_user_id) for i in range(1, 10)]
+        cursor.executemany("INSERT INTO batches (name, faculty_id) VALUES (?, ?)", batches_to_seed)
+
+    # Seed 10 Enrollments
+    cursor.execute("SELECT COUNT(*) FROM enrollments WHERE student_id = ?", (student_user_id,))
     if cursor.fetchone()[0] == 0:
         progress_values = [10.0, 25.0, 40.0, 55.0, 70.0, 80.0, 100.0, 15.0, 30.0, 45.0]
-        enrollments = [(student_id, i+1, progress_values[i]) for i in range(10)]
+        enrollments = [(student_user_id, i+1, progress_values[i]) for i in range(10)]
         cursor.executemany("INSERT INTO enrollments (student_id, course_id, progress) VALUES (?, ?, ?)", enrollments)
 
-    # Seed Attendance
-    cursor.execute("SELECT COUNT(*) FROM attendance WHERE student_id = ?", (student_id,))
-    if cursor.fetchone()[0] == 0:
-        attendance_data = [(student_id, 1, f'2026-05-{i+1:02d}', 'present' if i%3!=0 else ('absent' if i%3==1 else 'late')) for i in range(10)]
+    # Seed 10 Attendance records
+    cursor.execute("SELECT COUNT(*) FROM attendance WHERE student_id = ?", (student_user_id,))
+    if cursor.fetchone()[0] < 10:
+        attendance_data = [(student_user_id, batch_id, f'2026-05-{i+11:02d}', 'present' if i%3!=0 else ('absent' if i%3==1 else 'late')) for i in range(10)]
         cursor.executemany("INSERT INTO attendance (student_id, batch_id, date, status) VALUES (?, ?, ?, ?)", attendance_data)
 
-    # Seed Assessments
+    # Seed 10 Assessments
     cursor.execute("SELECT COUNT(*) FROM assessments")
-    if cursor.fetchone()[0] == 0:
-        assessments = [(i+1, f'Quiz {i+1}: {courses_to_seed[i][0]}', 100, f'2026-06-{i+1:02d}') for i in range(10)]
-        cursor.executemany("INSERT INTO assessments (course_id, title, total_marks, due_date) VALUES (?, ?, ?, ?)", assessments)
-        submissions = [(i+1, student_id, 80 + i, 'completed') for i in range(7)]
+    if cursor.fetchone()[0] <= 10: # already had some
+        assessments_to_add = [(i+1, f'Final Exam: {courses_to_seed[i-1][0]}', 100, f'2026-07-{i:02d}') for i in range(1, 11)]
+        cursor.executemany("INSERT INTO assessments (course_id, title, total_marks, due_date) VALUES (?, ?, ?, ?)", assessments_to_add)
+
+    # Seed 10 Assessment Submissions (Marks Entry)
+    cursor.execute("SELECT COUNT(*) FROM assessment_submissions WHERE student_id = ?", (student_user_id,))
+    if cursor.fetchone()[0] < 10:
+        marks = [92, 88, 95, 84, 76, 89, 91, 78, 85, 93]
+        submissions = [(i+1, student_user_id, marks[i], 'completed') for i in range(10)]
         cursor.executemany("INSERT INTO assessment_submissions (assessment_id, student_id, obtained_marks, status) VALUES (?, ?, ?, ?)", submissions)
 
-    # Seed Assignments
-    cursor.execute("SELECT COUNT(*) FROM assignments")
+    # Seed 10 Materials
+    cursor.execute("SELECT COUNT(*) FROM materials")
     if cursor.fetchone()[0] == 0:
-        assignments = [(i+1, f'Assignment {i+1}: {courses_to_seed[i][0]}', 'Demo task description', f'2026-06-{i+1:02d}', 'Faculty Name') for i in range(10)]
-        cursor.executemany("INSERT INTO assignments (course_id, title, description, due_date, instructor_name) VALUES (?, ?, ?, ?, ?)", assignments)
-        sub_data = [(i+1, student_id, 'graded' if i%2==0 else 'submitted', 90 - i if i%2==0 else None) for i in range(6)]
-        cursor.executemany("INSERT INTO submissions (assignment_id, student_id, status, marks) VALUES (?, ?, ?, ?)", sub_data)
+        materials = [(i%10 + 1, f"Lecture Notes - {courses_to_seed[i%10][0]}", "notes.pdf", "pdf") for i in range(10)]
+        cursor.executemany("INSERT INTO materials (course_id, title, file_url, material_type) VALUES (?, ?, ?, ?)", materials)
 
-    # Seed Certificates
-    cursor.execute("SELECT COUNT(*) FROM certificates WHERE student_id = ?", (student_id,))
+    # Seed 10 Live Classes
+    cursor.execute("SELECT COUNT(*) FROM live_classes")
     if cursor.fetchone()[0] == 0:
-        certs = [(str(uuid.uuid4())[:8].upper(), student_id, i+1, f'cert_{i+1}.pdf') for i in range(10)]
-        cursor.executemany("INSERT INTO certificates (certificate_id, student_id, course_id, pdf_path) VALUES (?, ?, ?, ?)", certs)
+        live_classes = [(batch_id, f"Session {i+1}: Q&A", "https://zoom.us/demo", f"2026-06-{i+10:02d} 10:00:00", "scheduled") for i in range(10)]
+        cursor.executemany("INSERT INTO live_classes (batch_id, title, meeting_link, schedule, status) VALUES (?, ?, ?, ?, ?)", live_classes)
 
-    # Seed Payments
-    cursor.execute("SELECT COUNT(*) FROM payments WHERE student_id = ?", (student_id,))
+    # Seed 10 Notifications
+    cursor.execute("SELECT COUNT(*) FROM notifications WHERE user_id = ?", (faculty_user_id,))
     if cursor.fetchone()[0] == 0:
-        p_data = [(student_id, 50.0 + i*10, f'Payment for {courses_to_seed[i][0]}', 'success' if i%3!=0 else 'pending', f'TXN-{uuid.uuid4().hex[:6].upper()}') for i in range(10)]
+        faculty_notifs = [(faculty_user_id, f"Faculty Alert {i+1}", f"Sample notification for faculty {i+1}") for i in range(10)]
+        cursor.executemany("INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)", faculty_notifs)
+
+    # Seed 10 Payments (Fees) for Parent view
+    cursor.execute("SELECT COUNT(*) FROM payments WHERE student_id = ?", (student_user_id,))
+    if cursor.fetchone()[0] < 10:
+        p_data = [(student_user_id, 100.0 * (i+1), f"Semester Fee - Installment {i+1}", 'success' if i%4!=0 else 'pending', f'TXN-{uuid.uuid4().hex[:8].upper()}') for i in range(10)]
         cursor.executemany("INSERT INTO payments (student_id, amount, purpose, status, transaction_id) VALUES (?, ?, ?, ?, ?)", p_data)
-
-    # Seed Notifications
-    cursor.execute("SELECT COUNT(*) FROM notifications WHERE user_id = ?", (student_id,))
-    if cursor.fetchone()[0] == 0:
-        notifs = [(student_id, f'Alert {i+1}', f'Demo notification message {i+1}') for i in range(10)]
-        cursor.executemany("INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)", notifs)
-
-    # Seed Videos & Modules
-    cursor.execute("SELECT COUNT(*) FROM modules")
-    if cursor.fetchone()[0] == 0:
-        for i in range(10):
-            cursor.execute("INSERT INTO modules (course_id, title, order_num) VALUES (?, ?, ?)", (i+1, f'Module 1: Getting Started', 1))
-            mid = cursor.lastrowid
-            cursor.execute("INSERT INTO videos (module_id, title, video_url, duration) VALUES (?, ?, ?, ?)", 
-                           (mid, f'Intro to {courses_to_seed[i][0]}', 'https://www.youtube.com/embed/demo', 300))
-            vid = cursor.lastrowid
-            if i < 5:
-                cursor.execute("INSERT INTO video_watch_history (student_id, video_id, course_id, is_completed) VALUES (?, ?, ?, ?)", (student_id, vid, i+1, 1))
 
     conn.commit()
     conn.close()
 
 if __name__ == '__main__':
     init_db()
-    print("EduTech LMS Database initialized and seeded with 10 records per module successfully.")
+    print("EduTech LMS Database fully initialized and seeded with Faculty/Parent demo data.")

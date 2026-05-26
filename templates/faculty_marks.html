@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Marks Entry</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Enter and update student scores for assessments and examinations.</p>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 800;">Recent Submissions</h3>
+        <div style="display: flex; gap: 10px;">
+            <select class="form-control" style="width: 200px; padding: 0.5rem;">
+                <option>Filter by Batch</option>
+                <option>Alpha Batch 2026</option>
+            </select>
+            <button class="btn btn-primary btn-sm">Save All Changes</button>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Assessment Title</th>
+                    <th>Total Marks</th>
+                    <th>Obtained Marks</th>
+                    <th>Grade</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in assessments %}
+                <tr>
+                    <td style="font-weight: 700;">{{ m.student_name }}</td>
+                    <td>{{ m.assessment_title }}</td>
+                    <td>100</td>
+                    <td style="width: 150px;">
+                        <input type="number" class="form-control" value="{{ m.obtained_marks }}" style="padding: 0.4rem; font-weight: 700; text-align: center;">
+                    </td>
+                    <td>
+                        {% if m.obtained_marks >= 90 %}
+                        <span class="badge" style="background: #D1FAE5; color: #065F46;">A+</span>
+                        {% elif m.obtained_marks >= 80 %}
+                        <span class="badge" style="background: #DBEAFE; color: #1E40AF;">A</span>
+                        {% else %}
+                        <span class="badge" style="background: #F3F4F6; color: #374151;">B</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" style="border: 1px solid var(--border-color); color: var(--text-main);"><i class="fas fa-check"></i> Update</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="margin-bottom: 1.5rem;">Average Performance Chart</h3>
+    <div style="height: 150px; display: flex; align-items: flex-end; gap: 1rem; padding: 0 1rem; border-bottom: 2px solid var(--border-color);">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 100%; height: 92%; background: var(--primary-light); opacity: 0.8; border-radius: 4px 4px 0 0;"></div>
+            <span style="font-size: 0.7rem; margin-top: 5px;">A. Student</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 100%; height: 85%; background: var(--primary-light); opacity: 0.8; border-radius: 4px 4px 0 0;"></div>
+            <span style="font-size: 0.7rem; margin-top: 5px;">B. Student</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 100%; height: 95%; background: var(--primary-light); opacity: 0.8; border-radius: 4px 4px 0 0;"></div>
+            <span style="font-size: 0.7rem; margin-top: 5px;">C. Student</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 100%; height: 74%; background: var(--primary-light); opacity: 0.8; border-radius: 4px 4px 0 0;"></div>
+            <span style="font-size: 0.7rem; margin-top: 5px;">D. Student</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 100%; height: 88%; background: var(--primary-light); opacity: 0.8; border-radius: 4px 4px 0 0;"></div>
+            <span style="font-size: 0.7rem; margin-top: 5px;">E. Student</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

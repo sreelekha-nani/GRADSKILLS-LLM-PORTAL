@@ -26,8 +26,13 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             {% if enrollment %}
                 {% if enrollment.progress >= 100 %}
-                    <div style="display: flex; align-items: center; color: #28a745; font-weight: 700;">
-                        <span style="font-size: 1.5rem; margin-right: 8px;">✅</span> COMPLETED
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div style="display: flex; align-items: center; color: #28a745; font-weight: 700;">
+                            <span style="font-size: 1.5rem; margin-right: 8px;">✅</span> COMPLETED
+                        </div>
+                        <a href="{{ url_for('view_certificate', cert_id=enrollment.certificate_id if enrollment.certificate_id else 'NOT_FOUND') }}" target="_blank" class="btn btn-success" style="padding: 10px 20px; font-weight: 600; background: #10B981; border: none; text-decoration: none; display: flex; align-items: center; gap: 8px; color: white;">
+                            <i class="fas fa-certificate"></i> View Certificate
+                        </a>
                     </div>
                 {% else %}
                     <form action="{{ url_for('mark_course_done', course_id=course.id) }}" method="POST">

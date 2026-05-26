@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Attendance Reports</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Review and manage student attendance logs for all active batches.</p>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem; align-items: start;">
+    <!-- Attendance Table -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 800;">Recent Logs</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Student Name</th>
+                        <th>Batch</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in attendance %}
+                    <tr>
+                        <td style="font-weight: 600; color: var(--text-main);">{{ a.date }}</td>
+                        <td>{{ a.student_name }}</td>
+                        <td><span class="badge" style="background: #F3F4F6; color: var(--text-main);">{{ a.batch_name }}</span></td>
+                        <td>
+                            {% if a.status == 'present' %}
+                            <span class="badge" style="background: #D1FAE5; color: #065F46;">Present</span>
+                            {% elif a.status == 'absent' %}
+                            <span class="badge" style="background: #FEE2E2; color: #991B1B;">Absent</span>
+                            {% else %}
+                            <span class="badge" style="background: #FEF3C7; color: #92400E;">Late</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-outline" style="padding: 0.4rem; border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.75rem;">Edit</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Stats & Filters -->
+    <div>
+        <div class="card" style="text-align: center; border-top: 4px solid var(--primary-color);">
+            <h3 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem;">Average Attendance</h3>
+            <p style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">88.4%</p>
+            <div style="height: 6px; background: #E2E8F0; border-radius: 3px; margin-top: 1rem; overflow: hidden;">
+                <div style="width: 88%; height: 100%; background: var(--primary-color);"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: 800;">Analytics</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Present Rate</span>
+                    <span style="font-weight: 700; color: var(--success-color);">82%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Late Rate</span>
+                    <span style="font-weight: 700; color: var(--accent-color);">12%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Absent Rate</span>
+                    <span style="font-weight: 700; color: var(--danger-color);">6%</span>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-primary" style="width: 100%;">Download Monthly Report</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

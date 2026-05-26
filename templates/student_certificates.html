@@ -16,7 +16,7 @@
         </div>
         
         <div style="display: flex; gap: 10px;">
-            <a href="{{ url_for('download_certificate', cert_id=cert.certificate_id) }}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; font-size: 0.9rem;">Preview</a>
+            <a href="{{ url_for('view_certificate', cert_id=cert.certificate_id) }}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; font-size: 0.9rem;">Preview</a>
             <a href="{{ url_for('download_certificate', cert_id=cert.certificate_id) }}" download class="btn btn-success" style="flex: 1; text-align: center; font-size: 0.9rem;">Download PDF</a>
         </div>
     </div>

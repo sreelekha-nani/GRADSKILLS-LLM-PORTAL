@@ -23,7 +23,14 @@
                 <span style="font-size: 0.8rem; color: var(--text-muted);">{{ enrollment.progress|int }}% Complete</span>
             </div>
 
-            <a href="{{ url_for('student_course_detail', course_id=enrollment.course_id) }}" class="btn btn-primary" style="width: 100%; text-align: center;">Continue Learning</a>
+            <div style="display: flex; gap: 10px;">
+                <a href="{{ url_for('student_course_detail', course_id=enrollment.course_id) }}" class="btn btn-primary" style="flex: 2; text-align: center;">Continue Learning</a>
+                {% if enrollment.progress >= 100 %}
+                <a href="{{ url_for('view_certificate', cert_id=enrollment.certificate_id if enrollment.certificate_id else 'NOT_FOUND') }}" target="_blank" class="btn btn-success" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; background: #10B981; color: white; border: none; text-decoration: none;">
+                    <i class="fas fa-certificate"></i>
+                </a>
+                {% endif %}
+            </div>
         </div>
     </div>
     {% endfor %}

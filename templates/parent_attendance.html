@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Child Attendance</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Monitor daily presence and review monthly participation reports.</p>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem; align-items: start;">
+    <!-- Attendance Table -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 800;">Recent Daily Logs</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in attendance %}
+                    <tr>
+                        <td style="font-weight: 600; color: var(--text-main);">{{ a.date }}</td>
+                        <td>
+                            {% if a.status == 'present' %}
+                            <span class="badge" style="background: #D1FAE5; color: #065F46;">Present</span>
+                            {% elif a.status == 'absent' %}
+                            <span class="badge" style="background: #FEE2E2; color: #991B1B;">Absent</span>
+                            {% else %}
+                            <span class="badge" style="background: #FEF3C7; color: #92400E;">Late Arrival</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">Standard session participation</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Monthly Summary -->
+    <div>
+        <div class="card" style="text-align: center; border-top: 4px solid var(--success-color);">
+            <h3 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem;">Overall Presence</h3>
+            <p style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">92.5%</p>
+            <p style="font-size: 0.8rem; color: var(--success-color); font-weight: 700; margin-top: 5px;"><i class="fas fa-arrow-up"></i> Above average</p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: 800;">Monthly Trend</h3>
+            <div style="height: 120px; display: flex; align-items: flex-end; gap: 8px; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <div style="flex: 1; height: 75%; background: var(--primary-light); border-radius: 4px 4px 0 0;"></div>
+                <div style="flex: 1; height: 85%; background: var(--primary-light); border-radius: 4px 4px 0 0;"></div>
+                <div style="flex: 1; height: 60%; background: var(--primary-light); border-radius: 4px 4px 0 0;"></div>
+                <div style="flex: 1; height: 95%; background: var(--primary-color); border-radius: 4px 4px 0 0;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>Feb</span>
+                <span>Mar</span>
+                <span>Apr</span>
+                <span>May</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
