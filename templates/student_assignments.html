@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Assignments</h2>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Assignment Title</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Marks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in assignments %}
+            <tr>
+                <td>{{ a.course_title }}</td>
+                <td><strong>{{ a.title }}</strong></td>
+                <td>{{ a.due_date }}</td>
+                <td>
+                    {% if a.sub_status == 'submitted' %}
+                    <span style="color: #3B82F6; font-weight: 600;">Submitted</span>
+                    {% elif a.sub_status == 'graded' %}
+                    <span style="color: var(--success-color); font-weight: 600;">Graded</span>
+                    {% else %}
+                    <span style="color: var(--danger-color); font-weight: 600;">Pending</span>
+                    {% endif %}
+                </td>
+                <td>{{ a.marks or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

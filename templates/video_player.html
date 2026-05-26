@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 1rem;">
+    <a href="{{ url_for('student_course_detail', course_id=course.id) }}" style="color: var(--text-muted); text-decoration: none;">&larr; Back to {{ course.title }}</a>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 1rem;">{{ video.title }}</h2>
+    
+    <div class="video-container">
+        <!-- Uses provided video URL if it looks like an embed, otherwise mock -->
+        {% set v_url = video.video_url if video.video_url and 'embed' in video.video_url else 'https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1' %}
+        <iframe id="course-video" src="{{ v_url }}" frameborder="0" allowfullscreen></iframe>
+    </div>
+    
+    <div style="margin-top: 2rem;">
+        <button onclick="trackProgressManually()" class="btn btn-success">Mark as Completed</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mock webhook trigger
+function trackProgressManually() {
+    trackVideoProgress({{ video.id }}, {{ course.id }}, 100);
+    alert('Progress marked as 100% via Webhook Simulation!');
+}
+
+// Simulated automated tracking every 10 seconds
+setInterval(function() {
+    // trackVideoProgress({{ video.id }}, {{ course.id }}, 50);
+}, 10000);
+</script>
+{% endblock %}

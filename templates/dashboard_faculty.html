@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2>Faculty Dashboard</h2>
+    <a href="{{ url_for('create_course') }}" class="btn btn-primary">+ Create New Course</a>
+</div>
+
+<div class="grid">
+    {% for course in courses %}
+    <div class="card">
+        <h3>{{ course.title }}</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">
+            Category: {{ course.category }} | Price: ${{ course.price }}
+        </p>
+        <p style="margin-bottom: 1rem;">{{ course.description[:100] }}...</p>
+        <a href="{{ url_for('faculty_course_detail', course_id=course.id) }}" class="btn btn-primary" style="width:100%; text-align:center;">Manage Course</a>
+    </div>
+    {% else %}
+    <p>You haven't created any courses yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

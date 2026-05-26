@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <h2>{{ course.title }}</h2>
+    <p style="color: var(--text-muted);">{{ course.description }}</p>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 2fr;">
+    <div class="card">
+        <h3>Add New Module</h3>
+        <br>
+        <form method="POST" action="{{ url_for('add_module', course_id=course.id) }}">
+            <div class="form-group">
+                <label>Module Title</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-success">Add Module</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Course Modules & Videos</h3>
+        <br>
+        {% for module in modules %}
+        <div style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4>{{ module.title }}</h4>
+            </div>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                {% for video in videos if video.module_id == module.id %}
+                    <li style="margin-bottom: 5px;">{{ video.title }} <span style="font-size:0.8rem;color:#666;">({{ video.video_url }})</span></li>
+                {% else %}
+                    <li style="color: #999; font-size: 0.9rem;">No videos yet</li>
+                {% endfor %}
+            </ul>
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+                <form method="POST" action="{{ url_for('add_video', module_id=module.id) }}" style="display: flex; gap: 10px;">
+                    <input type="text" name="title" class="form-control" placeholder="Video Title" required style="padding: 5px; flex: 1;">
+                    <input type="text" name="video_url" class="form-control" placeholder="YouTube URL" required style="padding: 5px; flex: 1;">
+                    <button type="submit" class="btn btn-primary" style="padding: 5px 10px;">Add Video</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <p>No modules added yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Assessments & Quizzes</h2>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Test Title</th>
+                <th>Due Date</th>
+                <th>Result</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in assessments %}
+            <tr>
+                <td>{{ a.course_title }}</td>
+                <td><strong>{{ a.title }}</strong></td>
+                <td>{{ a.due_date }}</td>
+                <td>{{ a.obtained_marks or 'N/A' }} / {{ a.total_marks }}</td>
+                <td>
+                    {% if a.sub_status == 'completed' %}
+                    <span style="background: #D1FAE5; color: #065F46; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">PASSED</span>
+                    {% else %}
+                    <span style="color: var(--text-muted); font-weight: 600;">NOT ATTEMPTED</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

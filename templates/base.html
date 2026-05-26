@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTech LMS Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Sidebar active link styling */
+        .nav-links a.active {
+            background-color: var(--primary-color);
+            color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .nav-links i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    {% if session.get('user_id') and session.get('role') == 'student' %}
+    <!-- Student Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fas fa-graduation-cap"></i> EDUTECH LMS
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('student_dashboard') }}" class="{{ 'active' if request.endpoint == 'student_dashboard' }}"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="{{ url_for('browse_courses') }}" class="{{ 'active' if request.endpoint == 'browse_courses' }}"><i class="fas fa-search"></i> Browse Courses</a></li>
+            <li><a href="{{ url_for('student_my_courses') }}" class="{{ 'active' if request.endpoint == 'student_my_courses' }}"><i class="fas fa-book"></i> My Courses</a></li>
+            <li><a href="{{ url_for('student_attendance') }}" class="{{ 'active' if request.endpoint == 'student_attendance' }}"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li><a href="{{ url_for('student_assessments') }}" class="{{ 'active' if request.endpoint == 'student_assessments' }}"><i class="fas fa-vial"></i> Assessments</a></li>
+            <li><a href="{{ url_for('student_assignments') }}" class="{{ 'active' if request.endpoint == 'student_assignments' }}"><i class="fas fa-file-alt"></i> Assignments</a></li>
+            <li><a href="{{ url_for('student_certificates') }}" class="{{ 'active' if request.endpoint == 'student_certificates' }}"><i class="fas fa-certificate"></i> Certificates</a></li>
+            <li><a href="{{ url_for('student_progress') }}" class="{{ 'active' if request.endpoint == 'student_progress' }}"><i class="fas fa-chart-line"></i> Progress Report</a></li>
+            <li><a href="{{ url_for('student_video_learning') }}" class="{{ 'active' if request.endpoint == 'student_video_learning' }}"><i class="fas fa-video"></i> Video Learning</a></li>
+            <li><a href="{{ url_for('payment') }}" class="{{ 'active' if request.endpoint == 'payment' }}"><i class="fas fa-credit-card"></i> Fees / Payments</a></li>
+            <li><a href="{{ url_for('student_notifications') }}" class="{{ 'active' if request.endpoint == 'student_notifications' }}"><i class="fas fa-bell"></i> Notifications</a></li>
+            <li><a href="{{ url_for('student_profile') }}" class="{{ 'active' if request.endpoint == 'student_profile' }}"><i class="fas fa-user-cog"></i> Profile Settings</a></li>
+        </ul>
+        <div class="sidebar-footer" style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <a href="{{ url_for('logout') }}" class="btn-logout" style="background-color: var(--danger-color); color: white; text-decoration: none; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0.8rem; border-radius: 8px; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);">
+                <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout
+            </a>
+        </div>
+    </div>
+    <div class="main-content">
+    {% elif session.get('user_id') %}
+    <!-- Other Roles Sidebar -->
+    <div class="sidebar">
+        <div class="brand">EDUTECH LMS</div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}"><i class="fas fa-home"></i> Home</a></li>
+            {% if session.get('role') == 'admin' %}
+            <li><a href="{{ url_for('admin_courses') }}" class="{{ 'active' if request.endpoint == 'admin_courses' }}"><i class="fas fa-book"></i> Courses</a></li>
+            <li><a href="{{ url_for('manage_users') }}" class="{{ 'active' if request.endpoint == 'manage_users' }}"><i class="fas fa-users"></i> Users</a></li>
+            {% endif %}
+        </ul>
+        <div class="sidebar-footer" style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <a href="{{ url_for('logout') }}" class="btn-logout" style="background-color: var(--danger-color); color: white; text-decoration: none; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0.8rem; border-radius: 8px; transition: all 0.3s ease;">
+                <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout
+            </a>
+        </div>
+    </div>
+    <div class="main-content">
+    {% endif %}
+
+    <div class="topbar">
+        {% if session.get('user_id') %}
+        <div class="user-info">
+            Welcome, <strong>{{ session.get('name') }}</strong> ({{ session.get('role')|capitalize }})
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if session.get('user_id') %}
+    </div> <!-- Close main-content -->
+    {% endif %}
+</body>
+</html>

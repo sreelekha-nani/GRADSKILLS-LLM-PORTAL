@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Video Learning Library</h2>
+
+<div class="grid">
+    {% for video in videos %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; color: white;">
+            <i class="fas fa-play-circle fa-3x"></i>
+        </div>
+        <div style="padding: 1rem;">
+            <h4 style="margin-bottom: 5px;">{{ video.title }}</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Course: {{ video.course_title }}</p>
+            <a href="{{ url_for('watch_video', video_id=video.id) }}" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">Watch Now</a>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% for course in seeded_courses %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <img src="{{ course.thumbnail }}" style="width: 100%; height: 120px; object-fit: cover;">
+        <div style="padding: 1rem;">
+            <h4 style="margin-bottom: 5px;">{{ course.title }} Full Tutorial</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Embedded Learning</p>
+            <a href="{{ url_for('student_course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">Watch Embedded</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

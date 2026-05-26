@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Progress Report</h2>
+
+<div class="card">
+    <h3 style="margin-bottom: 2rem;">Course-wise Completion</h3>
+    {% for enrollment in enrollments %}
+    <div style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span style="font-weight: 600;">{{ enrollment.title }}</span>
+            <span style="color: var(--primary-color); font-weight: 700;">{{ enrollment.progress|int }}%</span>
+        </div>
+        <div class="progress-container" style="height: 12px;">
+            <div class="progress-bar" style="width: {{ enrollment.progress }}%;"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Learning Velocity</h3>
+        <div style="height: 200px; display: flex; align-items: flex-end; gap: 1rem; padding-top: 2rem;">
+            <div style="flex: 1; background: var(--primary-light); height: 40%; border-radius: 4px 4px 0 0;"></div>
+            <div style="flex: 1; background: var(--primary-light); height: 60%; border-radius: 4px 4px 0 0;"></div>
+            <div style="flex: 1; background: var(--primary-light); height: 90%; border-radius: 4px 4px 0 0;"></div>
+            <div style="flex: 1; background: var(--primary-light); height: 75%; border-radius: 4px 4px 0 0;"></div>
+            <div style="flex: 1; background: var(--primary-color); height: 95%; border-radius: 4px 4px 0 0;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-muted);">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
+        </div>
+    </div>
+    <div class="card">
+        <h3>Summary Statistics</h3>
+        <br>
+        <div style="padding: 1rem; background: #f9fafb; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Total Study Hours</p>
+            <h4 style="font-size: 1.5rem;">42.5 hrs</h4>
+        </div>
+        <div style="padding: 1rem; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Assessment Average</p>
+            <h4 style="font-size: 1.5rem;">88%</h4>
+        </div>
+    </div>
+</div>
+{% endblock %}

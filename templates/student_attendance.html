@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Attendance History</h2>
+
+<div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
+    <div class="card stat-card">
+        <h3>Total Attendance</h3>
+        <p style="font-size: 3rem;">{{ pct }}%</p>
+        <br>
+        <div style="text-align: left; font-size: 0.9rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Total Classes</span>
+                <strong>{{ attendance|length }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Classes Attended</span>
+                <strong>{{ (attendance|length * pct / 100)|int }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Monthly Attendance Log</h3>
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Batch</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in attendance %}
+                <tr>
+                    <td>{{ log.date }}</td>
+                    <td>
+                        {% if log.status == 'present' %}
+                        <span style="color: var(--success-color); font-weight: 600;">Present</span>
+                        {% else %}
+                        <span style="color: var(--danger-color); font-weight: 600;">Absent</span>
+                        {% endif %}
+                    </td>
+                    <td>Batch #{{ log.batch_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

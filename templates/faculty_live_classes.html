@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem;">Live Classes & Schedule</h2>
+
+<div class="card">
+    <p>Manage your upcoming live sessions.</p>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Schedule</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for live in live_classes %}
+            <tr>
+                <td>{{ live.title }}</td>
+                <td>{{ live.schedule }}</td>
+                <td>{{ live.status }}</td>
+                <td><a href="{{ live.meeting_link }}" target="_blank" class="btn btn-success btn-sm">Join Class</a></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">No live classes scheduled.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <button class="btn btn-primary">+ Schedule New Class</button>
+</div>
+{% endblock %}

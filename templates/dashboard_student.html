@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Student Dashboard</h2>
+
+<!-- Dashboard Widgets -->
+<div class="grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+    <div class="card stat-card" style="border-top: 4px solid var(--primary-color);">
+        <h3>Enrolled Courses</h3>
+        <p>{{ stats.enrolled }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid var(--success-color);">
+        <h3>Completed Courses</h3>
+        <p>{{ stats.completed }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid #8B5CF6;">
+        <h3>Videos Watched</h3>
+        <p>{{ stats.videos_watched }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid var(--accent-color);">
+        <h3>Attendance %</h3>
+        <p>{{ stats.attendance_pct }}%</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid var(--danger-color);">
+        <h3>Pending Assignments</h3>
+        <p>{{ stats.pending_assignments }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid #EC4899;">
+        <h3>Upcoming Assessments</h3>
+        <p>{{ stats.upcoming_assessments }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid #06B6D4;">
+        <h3>Certificates Earned</h3>
+        <p>{{ stats.certificates_earned }}</p>
+    </div>
+    <div class="card stat-card" style="border-top: 4px solid #10B981;">
+        <h3>Overall Progress</h3>
+        <p>{{ stats.overall_progress }}%</p>
+    </div>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr;">
+    <!-- Recent Learning -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem;">Continue Learning</h3>
+        {% for enrollment in enrollments[:3] %}
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
+            <img src="{{ enrollment.thumbnail }}" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px;">
+            <div style="flex: 1;">
+                <h4 style="font-size: 1rem; margin-bottom: 5px;">{{ enrollment.title }}</h4>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {{ enrollment.progress }}%;"></div>
+                </div>
+            </div>
+            <a href="{{ url_for('student_course_detail', course_id=enrollment.course_id) }}" class="btn btn-primary btn-sm" style="font-size: 0.8rem;">Resume</a>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted);">No active enrollments. <a href="{{ url_for('browse_courses') }}">Browse courses here.</a></p>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Links / Recent Notifications -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem;">Recent Alerts</h3>
+        <div style="font-size: 0.9rem;">
+            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
+                <span style="color: var(--danger-color); font-weight: 600;">NEW!</span> Assignment "Python Basics" is due in 2 days.
+            </div>
+            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
+                <span style="color: var(--primary-light); font-weight: 600;">INFO:</span> Fee payment for May 2026 is pending.
+            </div>
+            <div style="padding-bottom: 1rem;">
+                <span style="color: var(--success-color); font-weight: 600;">AWARD:</span> You earned a certificate in "Python Programming"!
+            </div>
+        </div>
+        <br>
+        <a href="{{ url_for('student_notifications') }}" style="text-decoration: none; color: var(--primary-color); font-weight: 600; font-size: 0.85rem;">View All Notifications &rarr;</a>
+    </div>
+</div>
+{% endblock %}

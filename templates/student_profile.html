@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em;">Profile Settings</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your account information and preferences.</p>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2.5rem; align-items: start;">
+    <!-- Profile Card -->
+    <div>
+        <div class="card" style="text-align: center; padding: 2.5rem 1.75rem;">
+            <div style="width: 140px; height: 140px; border-radius: 70px; background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; display: flex; align-items: center; justify-content: center; font-size: 4rem; font-weight: 700; margin: 0 auto 2rem auto; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); border: 4px solid white;">
+                {{ user.name[0] }}
+            </div>
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">{{ user.name }}</h3>
+            <span class="badge" style="background: #E0E7FF; color: var(--primary-color); margin-bottom: 1.5rem;">Student #{{ user.id }}</span>
+            
+            <div style="text-align: left; background: #F8FAFC; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Batch</span>
+                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">{{ user.batch_name or 'Alpha Batch' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Joined</span>
+                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">{{ user.created_at[:10] }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Courses</span>
+                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">{{ user.course_count }} Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div>
+        <div class="card">
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Personal Information</h3>
+            <form method="POST">
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" name="phone" class="form-control" value="{{ user.phone or '' }}" placeholder="+1 234 567 8900">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control" value="{{ user.email }}" readonly style="background-color: #F1F5F9; cursor: not-allowed; color: var(--text-muted);">
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;"><i class="fas fa-lock" style="margin-right: 4px;"></i> Email is managed by your administrator.</p>
+                </div>
+                
+                <div style="margin-top: 2.5rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Security</h3>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Leave blank to keep your current password">
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2.5rem; font-size: 1rem;">Save All Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

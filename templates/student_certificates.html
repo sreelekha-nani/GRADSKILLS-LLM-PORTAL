@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Earned Certificates</h2>
+
+<div class="grid">
+    {% for cert in certs %}
+    <div class="card" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="font-size: 3rem; color: var(--accent-color); margin-bottom: 1rem;">
+                <i class="fas fa-certificate"></i>
+            </div>
+            <h3 style="margin-bottom: 0.5rem;">{{ cert.course_title }}</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Issued on: {{ cert.issued_at[:10] }}</p>
+            <p style="font-family: monospace; font-size: 0.8rem; background: var(--bg-light); padding: 5px; border-radius: 4px; margin-bottom: 1.5rem;">ID: {{ cert.certificate_id }}</p>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('download_certificate', cert_id=cert.certificate_id) }}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; font-size: 0.9rem;">Preview</a>
+            <a href="{{ url_for('download_certificate', cert_id=cert.certificate_id) }}" download class="btn btn-success" style="flex: 1; text-align: center; font-size: 0.9rem;">Download PDF</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+        <p style="color: var(--text-muted);">Complete your courses to earn certificates!</p>
+        <p style="font-size: 0.9rem; margin-top: 10px;">Once a course progress hits 100%, your certificate will appear here automatically.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

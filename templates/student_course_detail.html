@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('student_dashboard') }}" style="text-decoration: none; color: var(--primary-color); font-weight: 500;">&larr; Back to Dashboard</a>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div>
+        <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">{{ course.title }}</h2>
+            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                <span class="badge" style="background: var(--primary-light); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">{{ course.category }}</span>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Instructor: <strong>{{ course.instructor_name or 'Faculty' }}</strong></span>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Level: <strong>{{ course.difficulty or 'Beginner' }}</strong></span>
+            </div>
+            <p style="color: var(--text-muted); line-height: 1.6;">{{ course.description }}</p>
+        </div>
+
+        {% if course.video_url %}
+        <div class="card" style="padding: 0; overflow: hidden; background: #000; margin-bottom: 2rem; aspect-ratio: 16/9;">
+            <iframe width="100%" height="100%" src="{{ course.video_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            {% if enrollment %}
+                {% if enrollment.progress >= 100 %}
+                    <div style="display: flex; align-items: center; color: #28a745; font-weight: 700;">
+                        <span style="font-size: 1.5rem; margin-right: 8px;">✅</span> COMPLETED
+                    </div>
+                {% else %}
+                    <form action="{{ url_for('mark_course_done', course_id=course.id) }}" method="POST">
+                        <button type="submit" class="btn btn-success" style="padding: 12px 24px; font-weight: 700;">Mark as Done</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem;">Course Content</h3>
+            
+            {% if modules %}
+                {% for module in modules %}
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">{{ module.title }}</h4>
+                    <ul style="list-style: none;">
+                        {% for video in videos if video.module_id == module.id %}
+                            <li style="margin-bottom: 0.8rem; display: flex; align-items: center; font-size: 0.9rem;">
+                                <span style="color: var(--primary-color); margin-right: 10px;">▶</span>
+                                <a href="{{ url_for('watch_video', video_id=video.id) }}" style="text-decoration: none; color: var(--text-dark);">
+                                    {{ video.title }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-muted); font-size: 0.9rem;">This course includes a comprehensive video tutorial. Watch the video and mark as done when finished!</p>
+            {% endif %}
+            
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+            
+            <div style="background: var(--primary-light); color: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                <p style="font-size: 0.8rem; margin-bottom: 5px;">Your Progress</p>
+                <div style="font-size: 1.5rem; font-weight: 700;">{{ enrollment.progress | int if enrollment else 0 }}%</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 2rem; color: var(--primary-color);">Notifications & Alerts</h2>
+
+<div class="card">
+    {% for n in notifications %}
+    <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; gap: 1rem; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--primary-light); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div>
+            <h4 style="margin-bottom: 5px;">{{ n.title }}</h4>
+            <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 5px;">{{ n.message }}</p>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ n.created_at }}</span>
+        </div>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem;">
+        <p style="color: var(--text-muted);">No new notifications.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

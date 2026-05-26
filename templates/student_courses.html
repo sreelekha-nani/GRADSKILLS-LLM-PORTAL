@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem;">Browse Courses</h2>
+
+<div class="grid">
+    {% for course in courses %}
+    <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        {% if course.thumbnail %}
+        <img src="{{ course.thumbnail }}" alt="{{ course.title }}" style="width: 100%; height: 180px; object-fit: cover;">
+        {% else %}
+        <div style="width: 100%; height: 180px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold;">
+            {{ course.title[0] }}
+        </div>
+        {% endif %}
+        
+        <div style="padding: 1.5rem; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-color); background: var(--primary-light); padding: 2px 8px; border-radius: 4px;">
+                    {{ course.category }}
+                </span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">
+                    {{ course.duration }}
+                </span>
+            </div>
+            
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">{{ course.title }}</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem; line-height: 1.4;">
+                {{ course.description[:80] }}...
+            </p>
+            
+            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                <div style="width: 24px; height: 24px; border-radius: 50%; background: #eee; margin-right: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;">
+                    {{ course.instructor_name[0] if course.instructor_name else 'F' }}
+                </div>
+                <span style="font-size: 0.85rem; color: var(--text-dark);">{{ course.instructor_name or 'Faculty' }}</span>
+            </div>
+
+            <form method="POST" action="{{ url_for('enroll_course', course_id=course.id) }}">
+                <button type="submit" class="btn btn-primary" style="width:100%; font-weight: 600;">Enroll Now</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p>No courses available right now.</p>
+    {% endfor %}
+</div>
+{% endblock %}
